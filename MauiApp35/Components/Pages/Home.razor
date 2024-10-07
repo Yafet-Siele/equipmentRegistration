@@ -1,0 +1,86 @@
+﻿@page "/"
+@inject Data.Itemservice Database
+@using MauiApp35.Data
+<h3>Equipment</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<a href="/addedititem" class="btn btn-primary">Add New Equipment</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Equipment Name</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Cost</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (items != null)
+        {
+            foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Equipment</td>
+                    <td>@item.Category</td>
+                    <td>@item.Description</td>
+                    <td>@item.Cost</td>
+                    <td>
+                        <a href="/addedititem/@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteItem(item)">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3"><strong>Total Cost:</strong></td>
+            <td><strong>@totalCost</strong></td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>
+
+@code {
+    private List<Item> items;
+    private string errorMessage;
+    private float totalCost;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            items = await Database.GetItemsAsync();
+            CalculateTotalCost();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void CalculateTotalCost()
+    {
+        totalCost = items?.Sum(item => item.Cost) ?? 0;
+    }
+
+    private async Task DeleteItem(Item item)
+    {
+        try
+        {
+            await Database.DeleteItemAsync(item);
+            items = await Database.GetItemsAsync();
+            CalculateTotalCost();  
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

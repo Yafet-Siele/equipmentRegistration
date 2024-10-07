@@ -1,0 +1,55 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>MAUI Blazor SQLite CRUD</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+<style>
+    .page {
+        display: flex;
+    }
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .main {
+        flex: 1;
+        padding: 20px;
+    }
+
+    .optional {
+        color: red;
+        font-weight: bold;
+    }
+    .center {
+        text-align: center;
+    }
+</style>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            var exception = (Exception)args.ExceptionObject;
+            Console.WriteLine($"Unhandled exception: {exception.Message}");
+        };
+
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            Console.WriteLine($"Unobserved task exception: {args.Exception.Message}");
+            args.SetObserved();
+        };
+    }
+}

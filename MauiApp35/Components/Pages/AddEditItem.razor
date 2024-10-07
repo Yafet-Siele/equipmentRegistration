@@ -1,0 +1,83 @@
+﻿@page "/addedititem/{id:int?}"
+@inject NavigationManager Navigation
+@inject Data.Itemservice Database
+@using MauiApp35.Data
+
+<h3 class="center">@(Id.HasValue ? "Edit Item" : "Equipment Registration")</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<EditForm Model="@item" OnValidSubmit="SaveItem">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="name">Equipment Name<span class="optional">*</span></label>
+        <InputText id="name" class="form-control" @bind-Value="item.Equipment" />
+    </div>
+    <div class="mb-3">
+        <label for="name">Category<span class="optional">*</span></label>
+        <InputText id="name" class="form-control" @bind-Value="item.Category" />
+    </div>
+    <div class="mb-3">
+        <label for="email">Cost<span class="optional">*</span></label>
+        <InputNumber id="email" class="form-control" @bind-Value="item.Cost" />
+    </div>
+    <div class="mb-3">
+        <label for="description">Description</label>
+        <InputText id="description" class="form-control" @bind-Value="item.Description" />
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private Item item = new Item();
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (Id.HasValue)
+            {
+                item = await Database.GetItemAsync(Id.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task SaveItem()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(item.Equipment))
+            {
+                throw new Exception("Equipment can't be left blank");
+            }
+            if (string.IsNullOrEmpty(item.Category))
+            {
+                throw new Exception("Category can't be left blank");
+            }
+            if (item.Cost == 0)
+            {
+                throw new Exception("Cost value can't be zero.");
+            }
+            await Database.SaveItemAsync(item);
+            Navigation.NavigateTo("/");
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}
